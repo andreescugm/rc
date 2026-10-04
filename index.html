@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Rumi Caín</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0}
+[hidden]{display:none!important}
+/* Layout: one full-bleed 3D stage; every control floats over it as carved stone and hammered gold. Single dark look by choice. */
+:root{
+  --void:#000000; --obsidian:#0b0907; --stone:#1a1510; --bronze:#6b4a22; --gold:#e8c06a; --gold-hi:#fff0b8;
+  --ember:#ff5a1f; --blood:#8e0f0f; --ash:#b3a998; --silver:#cfd6da;
+  --display:"Cinzel","Trajan Pro",Georgia,serif; --body:"Spectral",Georgia,"Times New Roman",serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--void); color:var(--ash); font-family:var(--body); font-size:16px; line-height:1.5; overflow:hidden; overscroll-behavior:none}
+#stage{position:fixed; inset:0; background:var(--void); overflow:hidden; user-select:none; -webkit-user-select:none; touch-action:none}
+#gl{position:absolute; inset:0; width:100%; height:100%; display:block}
+button{font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer}
+button:focus-visible, a:focus-visible, input:focus-visible, canvas:focus-visible{outline:2px solid var(--gold); outline-offset:3px}
+.gold{background:linear-gradient(180deg,var(--gold-hi) 0%,var(--gold) 42%,#9a6a22 58%,var(--gold) 100%); -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:none}
+.caps{font-family:var(--display); text-transform:uppercase; letter-spacing:.18em}
+
+/* intro veil */
+#veil{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; background:var(--void); z-index:9; transition:opacity 1.2s}
+#veil.off{opacity:0; pointer-events:none}
+#veil .hour{font-family:var(--display); font-weight:500; letter-spacing:.3em; font-size:14px; color:var(--bronze)}
+#enter{font-family:var(--display); font-weight:700; font-size:clamp(22px,4vw,34px); letter-spacing:.5em; padding:18px 30px 18px calc(30px + .5em)}
+#enter[disabled]{opacity:.35; cursor:default}
+
+/* hud */
+#hud{position:absolute; left:0; right:0; top:0; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding:calc(14px + env(safe-area-inset-top,0px)) 16px 0; z-index:5; pointer-events:none}
+#hud > *{pointer-events:auto}
+#purse{display:flex; align-items:center; gap:10px; font-family:var(--display); font-weight:700; letter-spacing:.14em; font-size:13px; text-transform:uppercase}
+#purse .coin{width:26px; height:26px; border-radius:50%; background:radial-gradient(circle at 35% 30%,#fff,var(--silver) 35%,#6b7377 75%,#2c3134); box-shadow:0 0 0 1px #000, 0 0 14px rgba(207,214,218,.35); flex:none}
+#purse b{font-size:20px; color:var(--silver); font-variant-numeric:tabular-nums}
+#purse span{color:var(--bronze)}
+.tools{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+.chip{font-family:var(--display); font-weight:700; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); padding:9px 12px; border:1px solid var(--bronze); background:rgba(11,9,7,.72); clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px)}
+.chip:hover{color:var(--gold-hi); border-color:var(--ember); box-shadow:inset 0 0 18px rgba(255,90,31,.35)}
+
+/* hotspots */
+#hot{position:absolute; inset:0; z-index:3; pointer-events:none}
+.hs{position:absolute; transform:translate(-50%,-50%); pointer-events:auto; display:flex; flex-direction:column; align-items:center; gap:8px; padding:10px; min-width:44px}
+.hs i{width:15px; height:15px; transform:rotate(45deg); border:1.5px solid var(--gold); background:rgba(255,90,31,.25); box-shadow:0 0 16px var(--ember), inset 0 0 6px var(--gold-hi); animation:pulse 2.2s ease-in-out infinite}
+.hs span{font-family:var(--display); font-weight:700; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--gold-hi); text-shadow:0 1px 0 #000,0 0 12px #000,0 0 12px #000; white-space:nowrap}
+.hs:hover i{background:var(--ember)}
+.hs.quiet i{width:7px; height:7px; border-color:var(--bronze); background:none; box-shadow:none; animation:none; opacity:.5}
+.hs.quiet span{display:none}
+@keyframes pulse{50%{box-shadow:0 0 30px var(--ember), inset 0 0 8px var(--gold-hi)}}
+
+/* caption */
+#cap{position:absolute; left:16px; right:16px; bottom:calc(26px + env(safe-area-inset-bottom,0px)); text-align:center; z-index:4; pointer-events:none; transition:opacity .8s}
+#cap h1{margin:0; font-family:var(--display); font-weight:900; font-size:clamp(18px,3.2vw,34px); letter-spacing:.3em; text-indent:.3em; text-wrap:balance}
+#cap p{margin:6px 0 0; font-family:var(--display); font-weight:500; font-size:12px; letter-spacing:.26em; text-transform:uppercase; color:var(--ash); text-shadow:0 0 10px #000,0 0 10px #000}
+
+/* lift panel */
+#lift{position:absolute; right:16px; top:50%; transform:translateY(-50%); z-index:5; display:flex; flex-direction:column; gap:10px; padding:14px 12px; background:linear-gradient(180deg,#2a2118,#0f0c09); border:1px solid var(--bronze); box-shadow:inset 0 0 0 1px #000, inset 0 0 24px #000, 0 0 50px rgba(0,0,0,.8)}
+#lift button{width:50px; height:50px; border-radius:50%; display:grid; place-items:center; color:var(--gold); background:radial-gradient(circle at 40% 30%,#3a2d1e,#120e0a 70%); border:1px solid var(--bronze); box-shadow:inset 0 0 0 2px #000, 0 2px 0 #000}
+#lift button:hover, #lift button.on{color:var(--gold-hi); border-color:var(--ember); box-shadow:inset 0 0 0 2px #000, 0 0 22px var(--ember)}
+#lift button.no{animation:no .4s}
+#lift svg{width:26px; height:26px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round}
+@keyframes no{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+/* crypt walk */
+#move{position:absolute; left:50%; transform:translateX(-50%); bottom:calc(92px + env(safe-area-inset-bottom,0px)); z-index:5; display:flex; gap:10px}
+#move .chip{padding:13px 18px}
+
+/* panel */
+#panel{position:absolute; inset:0; z-index:7; display:grid; place-items:center; padding:16px; background:radial-gradient(ellipse at center,rgba(0,0,0,.35),rgba(0,0,0,.82)); user-select:text; -webkit-user-select:text; touch-action:auto}
+#panel .slab{width:min(560px,100%); max-height:86%; overflow:auto; padding:30px 28px 26px; background:linear-gradient(180deg,#221b14,#0d0a08); border:1px solid var(--bronze); box-shadow:inset 0 0 0 1px #000, inset 0 0 60px #000, 0 0 90px rgba(255,90,31,.16); clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px)}
+#panel .kick{font-family:var(--display); font-weight:700; font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:var(--ember); margin:0 0 8px}
+#panel h2{margin:0 0 14px; font-family:var(--display); font-weight:900; font-size:clamp(22px,4.4vw,32px); letter-spacing:.12em; line-height:1.15; text-wrap:balance}
+#panel .body{color:var(--ash); font-size:17px; max-width:60ch}
+#panel .body p{margin:0 0 12px}
+#panel .body ul{margin:0 0 12px; padding:0; list-style:none; display:grid; gap:8px}
+#panel .body li{display:flex; justify-content:space-between; gap:14px; padding:9px 0; border-bottom:1px solid rgba(107,74,34,.45)}
+#panel .body li b{font-family:var(--display); font-weight:700; letter-spacing:.1em; color:var(--gold); text-transform:uppercase; font-size:14px}
+#panel .body li em{color:var(--bronze); font-style:normal; font-size:14px; text-align:right}
+#panel .body a{color:var(--gold); text-underline-offset:3px}
+#panel .body input{width:100%; box-sizing:border-box; font:inherit; color:var(--gold-hi); background:#070504; border:1px solid var(--bronze); padding:12px 14px; margin:4px 0 10px}
+#panel .body label{font-family:var(--display); font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--bronze)}
+#panel .acts{display:flex; flex-wrap:wrap; gap:10px; margin-top:18px}
+#panel .acts .chip{padding:12px 16px; font-size:12px}
+#panel .acts .chip.main{background:linear-gradient(180deg,#7a1a0c,#3a0a05); border-color:var(--ember); color:var(--gold-hi)}
+
+/* games */
+#game{position:absolute; inset:0; z-index:8; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:16px}
+#game h2{margin:0; font-family:var(--display); font-weight:900; letter-spacing:.3em; font-size:clamp(18px,3.4vw,28px)}
+#game p{margin:0; text-align:center; max-width:46ch; min-height:3em}
+#gc{width:min(760px,100%,96vh); aspect-ratio:16/9; background:#050403; border:1px solid var(--bronze); touch-action:none; cursor:crosshair}
+#game .acts{display:flex; gap:10px}
+.secret{position:absolute; left:16px; bottom:4px; margin:0; font-size:11px; color:#000; user-select:text; -webkit-user-select:text; z-index:1}
+.secret::selection{color:var(--gold); background:#1a1510}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <canvas id="gl" aria-label="Rumi Caín: una pirámide en Plaza de Castilla, un ascensor y una cripta."></canvas>
+  <p class="secret">Como es arriba es abajo. Leche a los niños y carne a los hombres.</p>
+  <div id="hot"></div>
+  <div id="hud" hidden>
+    <div id="purse" title="Monedas de plata"><i class="coin"></i><b id="coins">0</b><span id="grade">Aprendiz</span></div>
+    <div class="tools">
+      <button class="chip" id="skip" type="button" hidden>Saltar</button>
+      <button class="chip" id="back" type="button" hidden>Ascensor</button>
+      <button class="chip" id="mute" type="button" aria-pressed="false">Sonido</button>
+    </div>
+  </div>
+  <div id="lift" hidden role="group" aria-label="Botonera del ascensor"></div>
+  <div id="move" hidden>
+    <button class="chip" id="fwd" type="button">Avanzar</button>
+    <button class="chip" id="rev" type="button">Volver</button>
+  </div>
+  <div id="cap" aria-live="polite"><h1 class="gold" id="capT"></h1><p id="capS"></p></div>
+  <div id="panel" hidden role="dialog" aria-modal="true" aria-labelledby="pT">
+    <div class="slab">
+      <p class="kick" id="pK"></p>
+      <h2 class="gold" id="pT"></h2>
+      <div class="body" id="pB"></div>
+      <div class="acts" id="pA"></div>
+    </div>
+  </div>
+  <div id="game" hidden role="dialog" aria-modal="true" aria-labelledby="gT">
+    <h2 class="gold" id="gT"></h2>
+    <canvas id="gc" width="960" height="540"></canvas>
+    <p id="gP"></p>
+    <div class="acts"><button class="chip" id="gGo" type="button">Empezar</button><button class="chip" id="gX" type="button">Salir</button></div>
+  </div>
+  <div id="veil">
+    <span class="hour" id="hour"></span>
+    <button id="enter" class="gold" type="button" disabled>Cargando</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/objects/Reflector.js"></script>
+<script src="js/core.js"></script>
+<script src="js/outside.js"></script>
+<script src="js/lift.js"></script>
+<script src="js/rooms.js"></script>
+<script src="js/crypt.js"></script>
+<script src="js/games.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
