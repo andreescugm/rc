@@ -63,7 +63,7 @@ const GAMES = {
     how: 'El péndulo cuenta cada vez que pasa por el centro: uno, dos, tres. Toca solo en el tres. Tres rondas, cada una más rápida. El que se precipita pierde.',
     make: () => {
       let round = 0, t = 0, count = 0, last = 1, flash = 0, word = '', okUntil = -1, done = false, wait = 0.8; const half = [1.05, 0.8, 0.6], names = ['Uno', 'Dos', 'Tres'];
-      const o = { tap() { if (done || wait > 0) return; if (t <= okUntil) { round++; count = 0; wait = 1.0; word = round < 3 ? 'Bien' : ''; flash = 1; okUntil = -1; R.sfx.ding(); if (round >= 3) done = 'win:Despierta.'; } else done = count === 2 ? 'lose:Tarde.' : 'lose:Te has precipitado.'; },
+      const o = { tap() { if (done || wait > 0) return; if (t <= okUntil) { round++; count = 0; wait = 1.0; word = round < 3 ? 'Bien' : ''; flash = 1; okUntil = -1; R.sfx.bell(); if (round >= 3) done = 'win:Despierta.'; } else done = count === 2 ? 'lose:Tarde.' : 'lose:Te has precipitado.'; },
         step(dt) {
           if (done) return done; if (wait > 0) { wait -= dt; t = 0; last = 1; }
           t += dt; const hp = half[Math.min(2, round)], a = Math.cos(t * Math.PI / hp), s = Math.sign(a) || 1;

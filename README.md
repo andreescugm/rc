@@ -1,6 +1,6 @@
 # Rumi Caín
 
-La web de Rumi Caín como un edificio en 3D: la pirámide en Plaza de Castilla, el ascensor de símbolos, las plantas y una cripta de treinta nichos.
+La web de Rumi Caín en 3D: una pirámide de piedra que sube en Plaza de Castilla y, dentro, una cripta con un muro de veinticuatro nichos.
 
 Es un sitio estático. No hay build: `index.html` carga `js/` y `assets/` con rutas relativas.
 
@@ -15,16 +15,11 @@ y abrir `http://localhost:8000`. Abrir `index.html` con doble clic no funciona, 
 ## Estructura
 
 - `index.html`: página, estilos y la interfaz que flota sobre el 3D.
-- `js/core.js`: render, cámara, sonido, monedas y grados.
-- `js/outside.js`: la Castellana, las torres y la pirámide.
-- `js/lift.js`: el ascensor.
-- `js/rooms.js`: La Nuit, el piso, la sala de juntas y el club.
-- `js/crypt.js`: la cripta y el contenido de los nichos.
-- `js/games.js`: los tres juegos.
-- `assets/`: modelos, texturas y cielos.
+- `js/core.js`: render, pase de película, cámara con muelle y temblor real, sonido, monedas.
+- `js/vfx.js`: un sistema de partículas en GPU y sus presets (fuego, polvo, cascotes).
+- `js/outside.js`: la Castellana, las torres y la pirámide que sube.
+- `js/crypt.js`: la cripta, el muro de nichos y lo que guardan.
+- `js/games.js`: los tres juegos para ganar plata.
+- `assets/`: modelos, materiales, sprites, cielos, sonido y temblor de cámara.
 
-## Créditos
-
-- Modelos 3D, texturas y cielos: [Poly Haven](https://polyhaven.com), licencia CC0.
-- Motor 3D: [three.js](https://threejs.org) r128, licencia MIT, cargado desde CDN. `assets/cloud.png` y `assets/spark1.png` vienen de sus ejemplos.
-- Tipografías: Cinzel y Spectral, de Google Fonts.
+De dónde sale cada recurso y por qué se eligió: [ASSETS.md](ASSETS.md).
